@@ -1,4 +1,4 @@
-# AI Public Transport Optimization System
+# AI for Public Transport Optimization System
 
 This project implements an AI-powered public transport optimization system using GTFS (General Transit Feed Specification) data, featuring demand clustering, flow forecasting, and route optimization.
 
