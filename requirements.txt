@@ -1,0 +1,11 @@
+pandas
+geopandas
+sqlalchemy
+psycopg2-binary
+geoalchemy2
+scikit-learn
+statsmodels
+networkx
+streamlit
+pydeck
+
