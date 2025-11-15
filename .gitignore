@@ -33,8 +33,20 @@ build/
 Thumbs.db
 
 # Data files (large files)
+# Keep data/raw/ with GTFS prerequisite data, but exclude generated outputs
 data/raw/*.zip
-data/processed/*.pkl
+data/processed/
+models_artifacts/forecast_models/
+*.pkl
+*.pth
+
+# Generated simulation results
+*.json
+baseline_simulation_results.json
+dynamic_simulation_results.json
+
+# OSRM data files (regenerate locally)
+osrm-data/*.osrm*
 
 # Logs
 *.log
