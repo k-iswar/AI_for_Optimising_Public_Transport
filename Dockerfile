@@ -8,6 +8,11 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# --- ADD THIS LINE ---
+# This copies your local .streamlit folder into the container
+COPY ./.streamlit /app/.streamlit
+# ---------------------
+
 # Copy the source code into the container
 COPY ./src /app/src
 COPY ./data /app/data
@@ -17,4 +22,3 @@ EXPOSE 8501
 
 # Command to run the Streamlit app
 CMD ["streamlit", "run", "src/app.py"]
-

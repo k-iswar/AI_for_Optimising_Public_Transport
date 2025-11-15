@@ -19,8 +19,12 @@ ai_transport_project/
 │   ├── models/
 │   │   ├── __init__.py
 │   │   ├── cluster.py      # K-Means clustering model
-│   │   ├── forecast.py     # ARIMA forecasting model
+│   │   ├── forecast.py     # Prophet forecasting model
 │   │   └── optimize.py     # NetworkX graph optimization
+│   ├── simulation/
+│   │   ├── __init__.py
+│   │   ├── baseline_sim.py # Baseline (static) simulation
+│   │   └── dynamic_sim.py  # Dynamic (AI-driven) simulation
 │   └── app.py              # The Streamlit web application
 ├── tests/                  # Unit and integration tests
 ├── .dockerignore           # Files to ignore in Docker context
@@ -75,26 +79,60 @@ This will start a PostgreSQL database with PostGIS extension running on port 543
 ### Step 5: Load GTFS Data into Database
 
 ```bash
-python src/data/load_data.py
+docker compose run --rm web python src/data/load_data.py
 ```
 
-### Step 6: Run the Application
+### Step 6: Generate Passenger Demand Data
+
+```bash
+docker compose run --rm web python src/data/generate_passengers.py
+```
+
+### Step 7: Run Clustering
+
+```bash
+docker compose run --rm web python src/models/cluster.py
+```
+
+### Step 8: Train Forecasting Models
+
+```bash
+docker compose run --rm web python src/models/forecast.py
+```
+
+### Step 9: Run Simulations (Optional)
+
+```bash
+# Baseline (static) simulation
+docker compose run --rm web python src/simulation/baseline_sim.py
+
+# Dynamic (AI-driven) simulation
+docker compose run --rm web python src/simulation/dynamic_sim.py
+```
+
+### Step 10: Run the Application
 
 ```bash
 docker compose up --build
 ```
 
-This will build and start both the database and web application containers.
+This will build and start the database, OSRM router, web application, and Jupyter Lab.
 
-### Step 7: Access the Application
+### Step 11: Access the Services
 
-Open your web browser and navigate to: http://localhost:8501
+- **Streamlit App**: http://localhost:8501
+- **Jupyter Lab**: http://localhost:8888
 
 ## Features
 
-1. **Demand Clustering**: K-Means clustering to identify high-demand zones
-2. **Flow Forecasting**: ARIMA model for predicting passenger flow
+1. **Demand Clustering**: K-Means clustering to identify high-demand zones (10 clusters)
+2. **Flow Forecasting**: Prophet time-series model for predicting passenger demand with seasonality and holidays
 3. **Route Optimization**: NetworkX-based shortest path algorithm using Dijkstra's algorithm
+4. **Simulation Framework**: 
+   - Baseline simulation (static schedule)
+   - Dynamic simulation (AI-driven adaptive scheduling)
+   - Performance comparison (wait times, costs, efficiency)
+5. **Data Visualization**: Jupyter notebooks for analysis and comparison
 
 ## Database Configuration
 

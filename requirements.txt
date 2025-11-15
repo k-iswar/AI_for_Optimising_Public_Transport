@@ -8,4 +8,12 @@ statsmodels
 networkx
 streamlit
 pydeck
-
+requests
+simpy
+prophet
+jupyter
+jupyterlab
+matplotlib
+seaborn
+plotly
+ipykernel

@@ -1,0 +1,13 @@
+{
+  "simulation_type": "baseline",
+  "timestamp": "2025-11-14T17:55:40.354863",
+  "sample_size": 1560000,
+  "results": {
+    "average_wait_minutes": 5.682040319545148,
+    "total_cost": 74987700.0,
+    "total_km": 645000,
+    "passengers_served": 1346080,
+    "passengers_failed": 213920,
+    "cost_per_passenger": 55.70820456436467
+  }
+}

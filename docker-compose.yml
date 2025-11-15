@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: postgis/postgis:14-3.3
@@ -14,15 +12,48 @@ services:
       - postgis_data:/var/lib/postgresql/data
     restart: always
 
+  osrm-router:
+    image: osrm/osrm-backend:latest
+    container_name: osrm_router
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./osrm-data:/data
+    restart: always
+    # This command will use the file you renamed in Step 1
+    command: >
+      sh -c "osrm-routed --algorithm mld /data/delhi-latest.osrm"
+
   web:
     build: .
     container_name: streamlit_app
     ports:
       - "8501:8501"
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+    # This makes sure your app starts AFTER the database and router are ready
+    depends_on:
+      - db
+      - osrm-router
+    restart: always
+
+  jupyter:
+    build: .
+    container_name: jupyter_notebooks
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./notebooks:/app/notebooks
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./src:/app/src
+    working_dir: /app/notebooks
+    command: >
+      sh -c "jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password=''"
     depends_on:
       - db
     restart: always
 
 volumes:
   postgis_data:
-
