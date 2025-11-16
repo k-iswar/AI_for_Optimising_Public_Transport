@@ -1,4 +1,4 @@
-# AI for Public Transport Optimization System
+# AI Public Transport Optimization System
 
 This project implements an AI-powered public transport optimization system using GTFS (General Transit Feed Specification) data, featuring demand clustering, flow forecasting, and route optimization.
 
@@ -19,12 +19,8 @@ ai_transport_project/
 │   ├── models/
 │   │   ├── __init__.py
 │   │   ├── cluster.py      # K-Means clustering model
-│   │   ├── forecast.py     # Prophet forecasting model
+│   │   ├── forecast.py     # ARIMA forecasting model
 │   │   └── optimize.py     # NetworkX graph optimization
-│   ├── simulation/
-│   │   ├── __init__.py
-│   │   ├── baseline_sim.py # Baseline (static) simulation
-│   │   └── dynamic_sim.py  # Dynamic (AI-driven) simulation
 │   └── app.py              # The Streamlit web application
 ├── tests/                  # Unit and integration tests
 ├── .dockerignore           # Files to ignore in Docker context
@@ -68,7 +64,31 @@ pip install -r requirements.txt
 2. Place the zip file in the `data/raw/` directory
 3. Update the `GTFS_ZIP_PATH` in `src/data/load_data.py` with your file name
 
-### Step 4: Start the Database
+**Example for Delhi:**
+- Download from: http://www.delhimetrorail.com/opencms/opencms/en/
+- Or use the sample data provided in `data/raw/`
+
+### Step 4: Set Up OSRM Routing Data (Optional)
+
+OSRM (Open Source Routing Machine) is used for route optimization. If using dynamic scheduling features:
+
+1. Download OpenStreetMap data for your region:
+   - Visit [Geofabrik](https://www.geofabrik.de/) to download `.osm.pbf` files
+   - For Delhi: `delhi-latest.osm.pbf`
+   - Place in `osrm-data/` directory
+
+2. Process the data (using Docker):
+   ```bash
+   docker compose run --rm osrm osrm-extract -p /osrm/profiles/car.lua /osrm/osrm-data/delhi-latest.osm.pbf
+   docker compose run --rm osrm osrm-partition /osrm/osrm-data/delhi-latest.osm
+   docker compose run --rm osrm osrm-customize /osrm/osrm-data/delhi-latest.osm
+   ```
+
+3. The processed files will be in `osrm-data/` and ready to use
+
+**Note:** Generated OSRM files (`*.osm*`) are excluded from Git and regenerated locally as needed to reduce repo size.
+
+### Step 5: Start the Database
 
 ```bash
 docker compose up -d
@@ -76,63 +96,29 @@ docker compose up -d
 
 This will start a PostgreSQL database with PostGIS extension running on port 5432.
 
-### Step 5: Load GTFS Data into Database
+### Step 6: Load GTFS Data into Database
 
 ```bash
-docker compose run --rm web python src/data/load_data.py
+python src/data/load_data.py
 ```
 
-### Step 6: Generate Passenger Demand Data
-
-```bash
-docker compose run --rm web python src/data/generate_passengers.py
-```
-
-### Step 7: Run Clustering
-
-```bash
-docker compose run --rm web python src/models/cluster.py
-```
-
-### Step 8: Train Forecasting Models
-
-```bash
-docker compose run --rm web python src/models/forecast.py
-```
-
-### Step 9: Run Simulations (Optional)
-
-```bash
-# Baseline (static) simulation
-docker compose run --rm web python src/simulation/baseline_sim.py
-
-# Dynamic (AI-driven) simulation
-docker compose run --rm web python src/simulation/dynamic_sim.py
-```
-
-### Step 10: Run the Application
+### Step 7: Run the Application
 
 ```bash
 docker compose up --build
 ```
 
-This will build and start the database, OSRM router, web application, and Jupyter Lab.
+This will build and start both the database and web application containers.
 
-### Step 11: Access the Services
+### Step 8: Access the Application
 
-- **Streamlit App**: http://localhost:8501
-- **Jupyter Lab**: http://localhost:8888
+Open your web browser and navigate to: http://localhost:8501
 
 ## Features
 
-1. **Demand Clustering**: K-Means clustering to identify high-demand zones (10 clusters)
-2. **Flow Forecasting**: Prophet time-series model for predicting passenger demand with seasonality and holidays
+1. **Demand Clustering**: K-Means clustering to identify high-demand zones
+2. **Flow Forecasting**: ARIMA model for predicting passenger flow
 3. **Route Optimization**: NetworkX-based shortest path algorithm using Dijkstra's algorithm
-4. **Simulation Framework**: 
-   - Baseline simulation (static schedule)
-   - Dynamic simulation (AI-driven adaptive scheduling)
-   - Performance comparison (wait times, costs, efficiency)
-5. **Data Visualization**: Jupyter notebooks for analysis and comparison
 
 ## Database Configuration
 
@@ -145,11 +131,27 @@ Default database credentials:
 
 **Note**: Change these credentials in production environments!
 
+## Generated Files (Not in Git)
+
+To keep the repository small and clean, the following generated files are **excluded from Git** and stored locally only:
+
+- `data/processed/`: Processed data and simulation results
+- `models_artifacts/forecast_models/`: Trained Prophet forecasting models
+- `osrm-data/*.osrm*`: OSRM routing engine data files
+
+**These files are regenerated automatically when you:**
+1. Run model training scripts (`src/models/forecast.py`, `src/models/cluster.py`)
+2. Run simulations (`src/simulation/baseline_sim.py`, `src/simulation/dynamic_sim.py`)
+3. Initialize OSRM data (see Step 4 above)
+
+All these files are in `.gitignore` and won't be pushed to GitHub, keeping the repo size minimal while allowing local development.
+
 ## Troubleshooting
 
 - If Docker containers fail to start, ensure Docker is running and ports 5432 and 8501 are not in use
 - If the database connection fails, wait a few seconds for the database container to fully initialize
 - Check Docker logs: `docker compose logs`
+- If OSRM data files are missing, re-run the Step 4 setup commands above
 
 ## License
 
